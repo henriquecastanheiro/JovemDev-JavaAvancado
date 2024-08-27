@@ -1,16 +1,8 @@
 package desafio_dados.service;
 
-import java.util.List;
-
-import desafio_dados.dto.DadosDto;
+import org.springframework.http.ResponseEntity;
 
 public interface DadosService {
 
-	DadosDto validaDados(DadosDto Dados );
-	
-	List<DadosDto> numeroSorteado(Integer qtddDados);
-	
-	DadosDto somaDados(List<DadosDto> numeroSorteado );
-	
-	DadosDto valorPercentual(DadosDto somaDados, Integer valorAposta);
+	ResponseEntity<String> verificarDados(Integer qtddDados, Integer valorAposta);
 }
