@@ -4,53 +4,62 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jv.triersistemas.primeiro_projeto.atividade.service.TarefaService;
 import jv.triersistemas.primeiro_projeto.dto.TarefaDto;
+import jv.triersistemas.primeiro_projeto.entity.TarefaEntity;
+import jv.triersistemas.primeiro_projeto.repository.TarefaRepository;
 
 
 @Service
 public class TarefaServiceImpl implements TarefaService {
-	
-	private static List<TarefaDto> tarefas = new ArrayList<>();
-    private static Long contadorId = 1L;
+    
+    @Autowired
+    private TarefaRepository repository;
     
 	@Override
 	public List<TarefaDto> getTodasTarefas() {
-		return tarefas;
+		List<TarefaEntity> tarefas = repository.findAll();
+        List<TarefaDto> tarefaDtos = new ArrayList<>();
+        for (TarefaEntity tarefa : tarefas) {
+            tarefaDtos.add(new TarefaDto(tarefa));
+        }
+        return tarefaDtos;
 	}
 	
 	@Override
 	public Optional<TarefaDto> findById(Long id) {
-    	return tarefas.stream().filter(t -> t.getId().equals(id)).findFirst();
+    	Optional<TarefaEntity> tarefaEntity =  repository.findById(id);
+    	return tarefaEntity.map(TarefaDto::new);
     }
 
 	@Override
-	public TarefaDto adicionarTarefa(TarefaDto novaTarefa) {
-		novaTarefa.setId(contadorId++);
-        tarefas.add(novaTarefa);
-        return novaTarefa;
+	public TarefaDto adicionarTarefa(TarefaDto novaTarefaDto) {
+		var tarefaEntity = new TarefaEntity(novaTarefaDto);
+        TarefaEntity entidadePersistida = repository.save(tarefaEntity);
+        return new TarefaDto(entidadePersistida);
 	}
 
 	@Override
 	public TarefaDto atualizarTarefa(Long id, TarefaDto tarefaAtualizada) {
-		Optional<TarefaDto> tarefa = findById(id);
-        if (tarefa.isPresent()) {
-            tarefa.get().setTitulo(tarefaAtualizada.getTitulo());
-            tarefa.get().setDescricao(tarefaAtualizada.getDescricao());
-            tarefa.get().setCompleta(tarefaAtualizada.isCompleta());
-            return tarefa.get();
+		Optional<TarefaEntity> tarefaEntityOption= repository.findById(id);
+        if (tarefaEntityOption.isPresent()) {
+        	TarefaEntity tarefaEntity = tarefaEntityOption.get();
+            tarefaEntity.setTitulo(tarefaAtualizada.getTitulo());
+            tarefaEntity.setDescricao(tarefaAtualizada.getDescricao());
+            tarefaEntity.setCompleta(tarefaAtualizada.getCompleta());
+            TarefaEntity tarefaAtualizadaEntity = repository.save(tarefaEntity);
+            return new TarefaDto(tarefaAtualizadaEntity);
         }
         return null;
 	}
 
 	@Override
 	public void removerTarefa(Long id) {
-		tarefas.removeIf(t -> t.getId().equals(id));
+		repository.deleteById(id);
 	}
-	
-
 }
 	
 	
