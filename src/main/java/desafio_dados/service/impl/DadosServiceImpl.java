@@ -1,5 +1,7 @@
 package desafio_dados.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -20,9 +22,12 @@ public class DadosServiceImpl implements DadosService{
 		if (valorAposta <= 0) {
             return ResponseEntity.badRequest().body("O valor da aposta deve ser positivo.");
         }
+		if(valorAposta < qtddDados) {
+			return ResponseEntity.badRequest().body("O valor da aposta deve ser igual ou maior que " + qtddDados + ".");
+		}
         Map<Integer, Integer> mapaDados = lancarDados(qtddDados);
         int somaDosDados = somarDados(mapaDados);
-        double percentual = calcularPercentual(valorAposta, somaDosDados);
+        BigDecimal percentual = calcularPercentual(valorAposta, somaDosDados);
         String body = gerarBody(mapaDados, somaDosDados, percentual);
         return ResponseEntity.ok(body);
     }
@@ -40,11 +45,20 @@ public class DadosServiceImpl implements DadosService{
 		return mapaDados.values().stream().mapToInt(Integer::intValue).sum();	
 	}
 	
-	private Double calcularPercentual(Integer valorAposta,int somaDosDados) {
-		return ((double)(somaDosDados/valorAposta))*100;
+	private	BigDecimal calcularPercentual(Integer valorAposta,int somaDosDados) {
+		
+		if(somaDosDados < valorAposta) {
+			return BigDecimal.valueOf(somaDosDados)
+			.multiply(BigDecimal.valueOf(100))
+			.divide(BigDecimal.valueOf(valorAposta),2, RoundingMode.HALF_UP);
+		}else{
+			return BigDecimal.valueOf(valorAposta)
+			.multiply(BigDecimal.valueOf(100))
+			.divide(BigDecimal.valueOf(somaDosDados),2, RoundingMode.HALF_UP);
+		}
 	}
 	
-	private String gerarBody(Map<Integer, Integer> mapaDados, int somaDosDados, double percentual) {
+	private String gerarBody(Map<Integer, Integer> mapaDados, int somaDosDados, BigDecimal percentual) {
         StringBuilder sb = new StringBuilder();
         sb.append("Resultados dos Dados: \n");
         
