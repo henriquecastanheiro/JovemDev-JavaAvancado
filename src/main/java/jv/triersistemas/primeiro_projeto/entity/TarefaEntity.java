@@ -6,12 +6,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jv.triersistemas.primeiro_projeto.dto.TarefaDto;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
+@Data
 @Entity(name = "tarefa")
 public class TarefaEntity {
 	
